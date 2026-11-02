@@ -1,9 +1,0 @@
-### Quick Summary: Python Data Structures
-
-* **List (`[]`):** This is my go-to when I need an ordered collection of items that might change later. You can add, remove, or modify elements anytime, and it keeps everything in the exact order you added it. Duplicate values are totally fine here.
-
-* **Tuple (`()`):** I use a tuple when I have a set of values that should stay locked and unchangeable. It works a lot like a list with ordered indexing, but once you create it, you can't edit, add, or delete anything. It's great for keeping constant data safe from accidental edits.
-
-* **Set (`{}`):** A set is what I reach for when I only care about unique items and need to eliminate duplicates instantly. It doesn't keep track of index order or positions, but it guarantees every single item inside is one-of-a-kind.
-
-* **Dictionary (`{"key": "value"}`):** Instead of using numeric indexes like 0 or 1, a dictionary lets you label your data using key-value pairs. It’s perfect for representing real-world objects or records—like a student profile—where you can quickly look up information by its key name (like `"name"` or `"course"`).
