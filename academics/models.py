@@ -65,6 +65,15 @@ class Result(models.Model):
         validators=[MinValueValidator(0)]
     )
 
+    class Meta:
+        # A student can only have one result per exam (a retake = a new Exam row).
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'exam'],
+                name='unique_result_per_student_exam'
+            ),
+        ]
+
     def clean(self):
         super().clean()
 
