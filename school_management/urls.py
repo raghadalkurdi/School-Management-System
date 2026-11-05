@@ -20,3 +20,8 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+# Presentation-facing admin branding (Django recommends configuring these in urls.py)
+admin.site.site_header = "School Management System - Admin Dashboard"
+admin.site.site_title = "SMS Portal"
+admin.site.index_title = "Welcome to the Administration Panel"
