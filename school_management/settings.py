@@ -122,6 +122,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Authentication: portal users log in at /login/ (teachers & students).
+# The admin persona keeps using the Django admin login at /admin/.
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'login'
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

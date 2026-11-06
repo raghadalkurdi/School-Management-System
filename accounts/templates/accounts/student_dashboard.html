@@ -1,0 +1,129 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Student Portal | SMS Portal{% endblock %}
+{% block brand %}SMS Student Portal{% endblock %}
+
+{% block content %}
+{% if is_admin_preview %}
+  <div class="alert alert-secondary py-2">Admin preview of the student portal.</div>
+{% endif %}
+
+<h2 class="mb-3">Student Portal
+  <span class="text-muted fs-5">— {{ me.first_name }} {{ me.last_name }} ({{ me.student_number }})</span>
+</h2>
+<p class="text-muted">Your school information is read-only here. Contact the office for corrections.</p>
+
+<div class="row g-3 mb-2">
+  <div class="col-md-4">
+    <div class="card stat-card text-center py-3 stat-summary">
+      <div class="stat-num">{{ average|default:"—" }}{% if average %}%{% endif %}</div>
+      <div>Average across results</div>
+    </div>
+    <style>.stat-summary { background:#e8f4fd; }</style>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card stat-summary text-center py-3">
+      <div class="stat-num">{{ my_classroom|default:"—" }}</div>
+      <div>My classroom</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card stat-summary text-center py-3">
+      <div class="stat-num">{{ results|length }}</div>
+      <div>Results recorded</div>
+    </div>
+  </div>
+</div>
+
+<h5 class="section-title">My Details</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm mb-0">
+  <tbody>
+    <tr><th class="w-25">Email</th><td>{{ me.email }}</td></tr>
+    <tr><th>Phone</th><td>{{ me.phone_number }}</td></tr>
+    <tr><th>Date of birth</th><td>{{ me.date_of_birth }}</td></tr>
+    <tr><th>Parent / guardian</th><td>{{ me.parent_name }}</td></tr>
+    <tr><th>Registered</th><td>{{ me.date_registered|date }}</td></tr>
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">My Results</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Subject</th><th>Exam</th><th>Date</th><th>Score</th><th>Percent</th></tr></thead>
+  <tbody>
+    {% for r in results %}
+      <tr><td>{{ r.subject }}</td><td>{{ r.exam }}</td><td>{{ r.exam.exam_date }}</td>
+          <td>{{ r.marks }} / {{ r.total }}</td><td>{{ r.percent }}%</td></tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">No results recorded yet.</td></tr>{% endfor %}
+    {% if average %}
+      <tr><td colspan="4" class="fw-bold text-end">Average</td><td class="fw-bold">{{ average }}%</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">My Timetable
+  {% if not my_classroom %}<span class="badge bg-warning text-dark">not assigned to a classroom yet</span>{% endif %}
+</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Teacher</th></tr></thead>
+  <tbody>
+    {% for t in my_timetable %}
+      <tr><td>{{ t.day }}</td><td>{{ t.start_time }}</td><td>{{ t.end_time }}</td>
+          <td>{{ t.teacher }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No schedule published yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">My Attendance</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
+  <tbody>
+    {% for a in attendance %}
+      <tr><td>{{ a.date }}</td>
+          <td>
+            {% if a.status == 'PRESENT' %}<span class="badge bg-success">Present</span>
+            {% elif a.status == 'ABSENT' %}<span class="badge bg-danger">Absent</span>
+            {% elif a.status == 'LATE' %}<span class="badge bg-warning text-dark">Late</span>
+            {% else %}<span class="badge bg-secondary">Excused</span>{% endif %}
+          </td>
+          <td>{{ a.remarks|default:"—" }}</td></tr>
+    {% empty %}<tr><td colspan="3" class="text-muted">No attendance recorded yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+{% if issues %}
+<h5 class="section-title">Issues About Me</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Title</th><th>Reported</th><th>Detail</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for i in issues %}
+      <tr><td>{{ i.title }}</td><td>{{ i.reported_at|date }}</td>
+          <td>{{ i.description|truncatechars:80 }}</td>
+          <td>{% if i.is_resolved %}<span class="badge bg-success">Resolved</span>
+              {% else %}<span class="badge bg-secondary">Open</span>{% endif %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endif %}
+
+<h5 class="section-title">Subjects Catalog</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Code</th><th>Name</th><th>Grade</th></tr></thead>
+  <tbody>
+    {% for s in subjects %}
+      <tr><td>{{ s.subject_code }}</td><td>{{ s.subject_name }}</td><td>{{ s.grade }}</td></tr>
+    {% empty %}<tr><td colspan="3" class="text-muted">No subjects yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endblock %}

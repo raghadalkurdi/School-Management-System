@@ -1,0 +1,155 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Teacher Portal | SMS Portal{% endblock %}
+{% block brand %}SMS Teacher Portal{% endblock %}
+
+{% block content %}
+{% if is_admin_preview %}
+  <div class="alert alert-secondary py-2">
+    Admin preview — personal sections below populate once this login is linked to a teacher.
+  </div>
+{% endif %}
+
+<h2 class="mb-3">Teacher Portal
+  {% if me %}<span class="text-muted fs-5">— {{ me.first_name }} {{ me.last_name }}</span>{% endif %}
+</h2>
+<p class="text-muted">Read-only overview. Record editing is done through the administration panel.</p>
+
+<div class="row g-3 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card bg-primary text-white text-center py-3">
+      <div class="stat-num">{{ student_count }}</div>
+      <div>Students</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card bg-success text-white text-center py-3">
+      <div class="stat-num">{{ subject_count }}</div>
+      <div>Subjects</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card bg-info text-white text-center py-3">
+      <div class="stat-num">{{ exam_count }}</div>
+      <div>Exams</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card bg-warning text-white text-center py-3">
+      <div class="stat-num">{{ result_count }}</div>
+      <div>Results</div>
+    </div>
+  </div>
+</div>
+
+{% if me %}
+  <h5 class="section-title">My Classrooms</h5>
+  <div class="card shadow-sm"><div class="card-body p-0">
+  <table class="table table-sm table-striped mb-0">
+    <thead><tr><th>Room</th><th>Section</th><th>Grade</th><th>Capacity</th></tr></thead>
+    <tbody>
+      {% for c in my_classrooms %}
+        <tr><td>{{ c.room_number }}</td><td>{{ c.section }}</td>
+            <td>{{ c.grade }}</td><td>{{ c.capacity }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">No classrooms assigned.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div></div>
+
+<h5 class="section-title">My Timetable</h5>
+  <div class="card shadow-sm"><div class="card-body p-0">
+  <table class="table table-sm table-striped mb-0">
+    <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Classroom</th></tr></thead>
+    <tbody>
+      {% for t in my_timetable %}
+        <tr><td>{{ t.day }}</td><td>{{ t.start_time }}</td><td>{{ t.end_time }}</td>
+            <td>{{ t.classroom }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">No timetable slots.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div></div>
+{% endif %}
+
+<h5 class="section-title">Students</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Student #</th><th>Name</th><th>Email</th><th>Phone</th><th>Date registered</th></tr></thead>
+  <tbody>
+    {% for s in students %}
+      <tr><td>{{ s.student_number }}</td><td>{{ s.first_name }} {{ s.last_name }}</td>
+          <td>{{ s.email }}</td><td>{{ s.phone_number }}</td>
+          <td>{{ s.date_registered|date }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">No students yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">Subjects</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Code</th><th>Name</th><th>Grade</th><th>Description</th></tr></thead>
+  <tbody>
+    {% for s in subjects %}
+      <tr><td>{{ s.subject_code }}</td><td>{{ s.subject_name }}</td>
+          <td>{{ s.grade }}</td><td>{{ s.description|truncatechars:60 }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No subjects yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">Exams</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Exam</th><th>Subject</th><th>Date</th><th>Type</th><th>Total marks</th><th>Duration</th></tr></thead>
+  <tbody>
+    {% for e in exams %}
+      <tr><td>{{ e.exam_name }}</td><td>{{ e.subject }}</td><td>{{ e.exam_date }}</td>
+          <td>{{ e.exam_type }}</td><td>{{ e.total_marks }}</td><td>{{ e.duration_minutes }} min</td></tr>
+    {% empty %}<tr><td colspan="6" class="text-muted">No exams yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+<h5 class="section-title">Latest Results (newest 50)</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Student</th><th>Exam</th><th>Marks</th><th>%</th></tr></thead>
+  <tbody>
+    {% for r in results %}
+      <tr><td>{{ r.student }}</td><td>{{ r.exam }}</td>
+          <td>{{ r.marks }}</td><td>{{ r.percent }}%</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No results yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+{% if me and my_attendance %}
+<h5 class="section-title">Recent Attendance in My Classrooms</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Date</th><th>Student</th><th>Status</th><th>Remarks</th></tr></thead>
+  <tbody>
+    {% for a in my_attendance %}
+      <tr><td>{{ a.date }}</td><td>{{ a.student }}</td><td>{{ a.status }}</td>
+          <td>{{ a.remarks|default:"—" }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No attendance yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endif %}
+
+{% if me %}
+<h5 class="section-title">Issues I Reported</h5>
+<div class="card shadow-sm"><div class="card-body p-0">
+<table class="table table-sm table-striped mb-0">
+  <thead><tr><th>Title</th><th>Student</th><th>Reported</th><th>Resolved</th></tr></thead>
+  <tbody>
+    {% for i in my_issues %}
+      <tr><td>{{ i.title }}</td><td>{{ i.student }}</td><td>{{ i.reported_at|date }}</td>
+          <td>{% if i.is_resolved %}✅{% else %}⏳{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No issues reported.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endif %}
+{% endblock %}

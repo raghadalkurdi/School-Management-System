@@ -1,0 +1,31 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Log in | SMS Portal{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="text-center mb-4">School Management System</h4>
+        {% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input class="form-control" type="text" name="username" autofocus>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password">
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Log in</button>
+        </form>
+        <p class="text-muted small text-center mt-3 mb-0">
+          Teachers &amp; students log in here. School staff use the
+          <a href="/admin/">admin panel</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

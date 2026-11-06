@@ -1,0 +1,9 @@
+{% extends "accounts/base.html" %}
+{% block title %}No linked record | SMS Portal{% endblock %}
+{% block content %}
+<div class="alert alert-warning mt-4">
+  <strong>No {{ portal }} record is linked to this login yet.</strong><br>
+  Ask a school administrator to connect your account in
+  Admin → Accounts → User links, then log in again.
+</div>
+{% endblock %}
