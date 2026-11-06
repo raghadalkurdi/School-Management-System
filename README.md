@@ -77,6 +77,34 @@ python manage.py runserver
 
 Then open <http://127.0.0.1:8000/admin/> and log in.
 
+### Demo data (sandbox only — not for real institutions)
+
+The repository ships with two scripts that generate a complete **fictional**
+demo school: 5 teachers, 12 subjects, 3 classrooms, 24 students, exams,
+results, timetables, attendance, and issues — plus a login account (with a
+uniform demo password) for every person. Names, emails, and phone numbers are
+clearly fake (`sms-fake.local`).
+
+```powershell
+python _seed_data.py        # wipes & regenerates the demo dataset (idempotent)
+python _demo_accounts.py    # enrolls every seeded person (idempotent)
+```
+
+Run both in that order after `migrate`. Resulting logins:
+
+| Role | Username | Password |
+|---|---|---|
+| Admin | `admin` (create via `createsuperuser`) | your choice |
+| Teachers | `firstname.lastname` (e.g. `meriam.saleh`) | `Teacher@2026` |
+| Students | `firstname.lastname` (e.g. `ahmad.nasser`) | `Student@2026` |
+
+- Re-running either script restores a known-good state in seconds.
+- Teacher/student roles exist only through an `accounts.UserLink` row;
+  logins without a link see `/no-role/` with an explainer.
+- **Never use these scripts or passwords against real student data.** Real
+  accounts are created by an administrator through Django admin with
+  individually chosen passwords.
+
 ### Suggested data-entry order
 
 The models are FK-linked, so enter them parent-first:
@@ -93,6 +121,8 @@ The models are FK-linked, so enter them parent-first:
 SMS/
 ├── manage.py
 ├── requirements.txt
+├── _seed_data.py    # dev tool: regenerate the fictional demo dataset
+├── _demo_accounts.py  # dev tool: enroll demo logins (uniform passwords)
 ├── academics/       # Module 1: Student, Subject, Exam, Result
 ├── schedules/       # Module 2: Teacher, Classroom, Timetable
 ├── operations/      # Module 3: Attendance, ClassroomStudent, Issues
@@ -107,4 +137,6 @@ SMS/
 - **Don't** manually edit generated migration files — regenerate them instead.
 - **Never commit** `__pycache__/`, `.pyc` files, or `db.sqlite3`; they are
   ignored via `.gitignore`.
+- The `_seed_data.py` / `_demo_accounts.py` scripts are for **demo/dev data
+  only** — never use them on real student records.
 - Work on feature branches (e.g. `feature/<module>-<topic>`) and open a PR per module.
