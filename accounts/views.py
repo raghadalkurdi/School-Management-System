@@ -35,7 +35,16 @@ def home(request):
     """Landing page: send each role to its own portal."""
     if not request.user.is_authenticated:
         return redirect('login')
-    return redirect(_portal_for(resolve_role(request.user)))
+    role = resolve_role(request.user)
+    if role is None:
+        return redirect('no_role')  # authenticated but not linked to a person record
+    return redirect(_portal_for(role))
+
+
+@login_required
+def no_role(request):
+    """Authenticated user with no teacher/student link and no group — explain why."""
+    return render(request, 'accounts/no_record.html', {'portal': 'teacher or student'})
 
 
 def login_view(request):
@@ -50,7 +59,10 @@ def login_view(request):
         )
         if user is not None:
             login(request, user)
-            return redirect(_portal_for(resolve_role(user)))
+            role = resolve_role(user)
+            if role is None:
+                return redirect('no_role')
+            return redirect(_portal_for(role))
         error = 'Invalid username or password.'
     return render(request, 'accounts/login.html', {'error': error})
 
@@ -69,7 +81,7 @@ def _link_for(user):
 def teacher_dashboard(request):
     role = resolve_role(request.user)
     if role not in ('teacher', 'admin'):
-        return redirect(_portal_for(role) if role else 'login')
+        return redirect('no_role' if role is None else _portal_for(role))
 
     link = _link_for(request.user)
     me = link.teacher if link and link.teacher_id else None
@@ -117,7 +129,7 @@ def teacher_dashboard(request):
 def student_dashboard(request):
     role = resolve_role(request.user)
     if role not in ('student', 'admin'):
-        return redirect(_portal_for(role) if role else 'login')
+        return redirect('no_role' if role is None else _portal_for(role))
 
     link = _link_for(request.user)
     me = link.student if link and link.student_id else None
