@@ -1,14 +1,21 @@
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.conf import settings
 
 from academics.models import Exam, Result, Student, Subject
 from operations.models import Attendance, ClassroomStudent, Issues
-from schedules.models import Classroom, Timetable
+from schedules.models import Classroom, Teacher, Timetable
 
 from .models import UserLink
 
 DAY_ORDER = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4}
+
+
+def _has_logo():
+    """True when the real WTM SCHOOLHUB logo file is present for static serving."""
+    return (settings.BASE_DIR / 'accounts' / 'static' / 'accounts' / 'img'
+            / 'logo.png').exists()
 
 
 def resolve_role(user):
@@ -32,13 +39,21 @@ def _portal_for(role):
 
 
 def home(request):
-    """Landing page: send each role to its own portal."""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    role = resolve_role(request.user)
-    if role is None:
-        return redirect('no_role')  # authenticated but not linked to a person record
-    return redirect(_portal_for(role))
+    """Public landing page for the school brand (WTM SCHOOLHUB).
+
+    Aggregate counts are public-safe. Logged-in users get a 'My portal'
+    shortcut instead of being force-redirected away.
+    """
+    role = resolve_role(request.user) if request.user.is_authenticated else None
+    context = {
+        'role': role,
+        'has_logo': _has_logo(),
+        'student_count': Student.objects.count(),
+        'teacher_count': Teacher.objects.count(),
+        'subject_count': Subject.objects.count(),
+        'exam_count': Exam.objects.count(),
+    }
+    return render(request, 'accounts/landing.html', context)
 
 
 @login_required
@@ -70,7 +85,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     auth_logout(request)
-    return redirect('login')
+    return redirect('home')
 
 
 def _link_for(user):
