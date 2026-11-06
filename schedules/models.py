@@ -47,7 +47,14 @@ class Timetable(models.Model):
         related_name='timetables'
     )
 
-    #subject = models.ForeignKey(Subject,on_delete=models.PROTECT,related_name='timetables')
+    # Which subject this period is for (each teacher teaches specific subjects)
+    subject = models.ForeignKey(
+        'academics.Subject',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='timetables'
+    )
     day = models.CharField(max_length=10, choices=DAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()

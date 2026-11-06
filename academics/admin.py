@@ -10,9 +10,9 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('subject_code', 'subject_name', 'grade')
+    list_display = ('subject_code', 'subject_name', 'grade', 'teacher')
     search_fields = ('subject_code', 'subject_name')
-    list_filter = ('grade',)
+    list_filter = ('grade', 'teacher')
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):

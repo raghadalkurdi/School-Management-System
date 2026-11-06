@@ -102,21 +102,39 @@ def teacher_dashboard(request):
     me = link.teacher if link and link.teacher_id else None
     my_classrooms = me.classrooms.all() if me else Classroom.objects.none()
     my_timetable = sorted(
-        Timetable.objects.filter(teacher=me) if me else Timetable.objects.none(),
+        Timetable.objects.select_related('classroom', 'subject').filter(teacher=me)
+        if me else Timetable.objects.none(),
         key=lambda t: (DAY_ORDER.get(t.day, 9), str(t.start_time)),
     )
     my_attendance = Attendance.objects.filter(
         classroom__in=my_classrooms).order_by('-date')[:15] if me else None
     my_issues = Issues.objects.filter(reported_by=me) if me else None
 
-    # The academics tables, visible to every teacher (per spec) — read-only for now
+    # Linked teachers see their world: own subjects, exams of those subjects,
+    # students of their classrooms. Admin preview (no link) sees everything.
+    if me:
+        students_qs = (Student.objects.filter(
+            classroom_students__classroom__in=my_classrooms).distinct()
+            .order_by('student_number'))
+        subjects_qs = Subject.objects.filter(teacher=me).order_by('grade', 'subject_code')
+        exams_qs = (Exam.objects.select_related('subject').filter(subject__teacher=me)
+                    .order_by('-exam_date'))
+        result_qs = (Result.objects.select_related('student', 'exam__subject')
+                     .filter(exam__subject__teacher=me).order_by('-id')[:50])
+    else:
+        students_qs = Student.objects.order_by('student_number')
+        subjects_qs = Subject.objects.order_by('grade', 'subject_code')
+        exams_qs = Exam.objects.select_related('subject').order_by('-exam_date')
+        result_qs = (Result.objects.select_related('student', 'exam__subject')
+                     .order_by('-id')[:50])
+
     academics = {
-        'students': Student.objects.order_by('student_number'),
-        'subjects': Subject.objects.order_by('grade', 'subject_code'),
-        'exams': Exam.objects.select_related('subject').order_by('-exam_date'),
+        'students': students_qs,
+        'subjects': subjects_qs,
+        'exams': exams_qs,
         'results': [],
     }
-    for r in Result.objects.select_related('student', 'exam__subject').order_by('-id')[:50]:
+    for r in result_qs:
         academics['results'].append({
             'student': r.student,
             'exam': r.exam,
@@ -132,10 +150,12 @@ def teacher_dashboard(request):
         'my_attendance': my_attendance,
         'my_issues': my_issues,
         **academics,
-        'student_count': Student.objects.count(),
-        'subject_count': Subject.objects.count(),
-        'exam_count': Exam.objects.count(),
-        'result_count': Result.objects.count(),
+        # tiles match the tables below them: scoped when linked, school-wide otherwise
+        'student_count': students_qs.count(),
+        'subject_count': subjects_qs.count(),
+        'exam_count': exams_qs.count(),
+        'result_count': (Result.objects.filter(exam__subject__teacher=me).count()
+                         if me else Result.objects.count()),
     }
     return render(request, 'accounts/teacher_dashboard.html', context)
 
@@ -154,7 +174,8 @@ def student_dashboard(request):
     assignments = ClassroomStudent.objects.filter(student=me).select_related('classroom')
     my_classroom = assignments.first().classroom if assignments.exists() else None
     my_timetable = sorted(
-        Timetable.objects.filter(classroom=my_classroom) if my_classroom else [],
+        Timetable.objects.select_related('teacher', 'subject').filter(classroom=my_classroom)
+        if my_classroom else [],
         key=lambda t: (DAY_ORDER.get(t.day, 9), str(t.start_time)),
     )
     my_results = Result.objects.filter(
@@ -172,6 +193,7 @@ def student_dashboard(request):
         average = round(
             sum(r['percent'] for r in results_display) / len(results_display), 1)
 
+    student_grade = int(my_classroom.grade.split()[-1]) if my_classroom else None
     context = {
         'me': me,
         'is_admin_preview': role == 'admin',
@@ -181,6 +203,9 @@ def student_dashboard(request):
         'average': average,
         'attendance': Attendance.objects.filter(student=me).order_by('-date')[:15],
         'issues': Issues.objects.filter(student=me).order_by('-reported_at'),
-        'subjects': Subject.objects.order_by('grade', 'subject_code'),
+        # a student's catalog is the subjects of their own grade
+        'subjects': (Subject.objects.filter(grade=student_grade).order_by('subject_code')
+                     if student_grade is not None
+                     else Subject.objects.order_by('grade', 'subject_code')),
     }
     return render(request, 'accounts/student_dashboard.html', context)

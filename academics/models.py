@@ -23,6 +23,14 @@ class Subject(models.Model):
     grade = models.PositiveSmallIntegerField()
     subject_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    # The teacher who teaches this subject (both grades of it may share a teacher).
+    teacher = models.ForeignKey(
+        'schedules.Teacher',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subjects',
+    )
 
     def __str__(self):
         return f"{self.subject_code} - {self.subject_name}"

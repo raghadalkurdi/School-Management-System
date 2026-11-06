@@ -60,18 +60,18 @@
 <h5 class="section-title">My Timetable</h5>
   <div class="card shadow-sm"><div class="card-body p-0">
   <table class="table table-sm table-striped mb-0">
-    <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Classroom</th></tr></thead>
+    <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th><th>Classroom</th></tr></thead>
     <tbody>
       {% for t in my_timetable %}
         <tr><td>{{ t.day }}</td><td>{{ t.start_time }}</td><td>{{ t.end_time }}</td>
-            <td>{{ t.classroom }}</td></tr>
-      {% empty %}<tr><td colspan="4" class="text-muted">No timetable slots.</td></tr>{% endfor %}
+            <td>{{ t.subject }}</td><td>{{ t.classroom }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">No timetable slots.</td></tr>{% endfor %}
     </tbody>
   </table>
   </div></div>
 {% endif %}
 
-<h5 class="section-title">Students</h5>
+<h5 class="section-title">{% if me %}Students in My Classrooms{% else %}Students{% endif %}</h5>
 <div class="card shadow-sm"><div class="card-body p-0">
 <table class="table table-sm table-striped mb-0">
   <thead><tr><th>Student #</th><th>Name</th><th>Email</th><th>Phone</th><th>Date registered</th></tr></thead>
@@ -85,7 +85,7 @@
 </table>
 </div></div>
 
-<h5 class="section-title">Subjects</h5>
+<h5 class="section-title">{% if me %}My Subjects{% else %}Subjects{% endif %}</h5>
 <div class="card shadow-sm"><div class="card-body p-0">
 <table class="table table-sm table-striped mb-0">
   <thead><tr><th>Code</th><th>Name</th><th>Grade</th><th>Description</th></tr></thead>
@@ -111,7 +111,7 @@
 </table>
 </div></div>
 
-<h5 class="section-title">Latest Results (newest 50)</h5>
+<h5 class="section-title">{% if me %}Latest Results in My Subjects (newest 50){% else %}Latest Results (newest 50){% endif %}</h5>
 <div class="card shadow-sm"><div class="card-body p-0">
 <table class="table table-sm table-striped mb-0">
   <thead><tr><th>Student</th><th>Exam</th><th>Marks</th><th>%</th></tr></thead>

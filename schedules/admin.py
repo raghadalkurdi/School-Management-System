@@ -13,5 +13,5 @@ class ClassroomAdmin(admin.ModelAdmin):
 
 @admin.register(Timetable)
 class TimetableAdmin(admin.ModelAdmin):
-    list_display = ('day', 'start_time', 'end_time', 'teacher', 'classroom')
-    list_filter = ('day',)
+    list_display = ('day', 'start_time', 'end_time', 'teacher', 'subject', 'classroom')
+    list_filter = ('day', 'teacher')

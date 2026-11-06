@@ -46,6 +46,12 @@ for fn, ln, email, phone, dob, sex, addr in teachers_data:
     teachers[fn] = t
 
 # ---------------------------------------------------------------- subjects (grades 7 & 8)
+# Each subject code is owned by one teacher across both grades, so every
+# teacher teaches 1-2 subjects (Dana carries CS + Art).
+code_owner = {
+    "MATH": "Meriam", "ENG": "Omar", "SCI": "Lina",
+    "SST": "Yusuf", "CS": "Dana", "ART": "Dana",
+}
 subject_defs = [
     ("MATH", "Mathematics"), ("ENG", "English"), ("SCI", "Science"),
     ("SST", "Social Studies"), ("CS", "Computer Science"), ("ART", "Art"),
@@ -56,6 +62,7 @@ for grade in (7, 8):
         s = Subject.objects.create(
             subject_code=f"{code}-{grade}", grade=grade, subject_name=name,
             description=f"{name} curriculum for grade {grade}.",
+            teacher=teachers[code_owner[code]],
         )
         subjects[(grade, code)] = s
 
@@ -141,24 +148,25 @@ for student, grade in students:
         count_r += 1
 
 # ---------------------------------------------------------------- timetable
-# one slot per subject per day per classroom, 08:00-14:00 band
-# slots are taught by that classroom's own teacher-in-charge, so no teacher
-# can ever appear in two classrooms in the same period
+# one slot per subject per day per classroom (08:00-14:00 band).
+# Each slot names the SUBJECT it covers, taught by that subject's owner.
+# Rooms rotate their subject offsets so no two rooms hit the same subject
+# in the same period -- therefore no teacher is ever double-booked.
+rooms_list = list(rooms.values())
 slot = 0
-for room in rooms.values():
+for room_idx, room in enumerate(rooms_list):
     grade_key = int(room.grade.split()[-1])
     for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]:
-        start_h = 8
-        for code, _ in subject_defs[:5]:
-            subj = subjects[(grade_key, code)]
+        for period, _ in enumerate(subject_defs[:5]):
+            code_idx = (period + room_idx) % 5
+            subj = subjects[(grade_key, subject_defs[code_idx][0])]
             t = Timetable.objects.create(
-                teacher=room.teacher,
-                classroom=room, day=day,
-                start_time=datetime.time(start_h, 0),
-                end_time=datetime.time(start_h + 1, 0),
+                teacher=teachers[code_owner[subject_defs[code_idx][0]]],
+                classroom=room, subject=subj, day=day,
+                start_time=datetime.time(8 + period, 0),
+                end_time=datetime.time(9 + period, 0),
             )
             slot += 1
-            start_h += 1
 
 # ---------------------------------------------------------------- attendance
 # last 5 school days (Mon-Fri of this week)
