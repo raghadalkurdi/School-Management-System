@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nn0z(zcc6@18l+l9li9j=&#!c6&9l-s8dvr)+bv3p#x^_v*l1b'
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-nn0z(zcc6@18l+l9li9j=&#!c6&9l-s8dvr)+bv3p#x^_v*l1b",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Defaults to True locally; Render sets DJANGO_DEBUG=False via render.yaml.
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+
+# Render injects this on every web service; trust our own *.onrender.com host.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Extra hosts may be provided as a comma-separated list (e.g. custom domains).
+EXTRA_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
+if EXTRA_HOSTS:
+    ALLOWED_HOSTS.extend(h.strip() for h in EXTRA_HOSTS.split(",") if h.strip())
+
+# Post forms (admin, login) must trust the public https origin.
+CSRF_TRUSTED_ORIGINS = (
+    [f"https://{RENDER_EXTERNAL_HOSTNAME}"] if RENDER_EXTERNAL_HOSTNAME else []
+)
 
 
 # Application definition
@@ -47,6 +67,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,6 +142,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise serves static files directly from the web process.
+# CompressedStaticFilesStorage (no manifest) is used so collectstatic never
+# fails on a stale template reference.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Authentication: portal users log in at /login/ (teachers & students).
 # The admin persona keeps using the Django admin login at /admin/.

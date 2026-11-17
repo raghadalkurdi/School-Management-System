@@ -1,0 +1,71 @@
+School Management System — Test Evidence
+========================================
+Run Date : 2026-11-07
+Django    : 6.1.2
+Python    : 3.14
+Test DB   : In-memory SQLite (isolated per run)
+
+Command
+-------
+  .venv\Scripts\python.exe manage.py test academics schedules operations --verbosity=2
+
+Result
+------
+  Found 28 test(s).
+  Ran 28 tests in 0.095s
+  OK — 0 failures, 0 errors, 0 skipped
+
+Test Breakdown
+--------------
+
+[academics] — 12 tests
+  ExamModelTest
+    ✓ test_create_exam
+    ✓ test_exam_total_marks_minimum         (total_marks=0 must raise ValidationError)
+  ResultModelTest
+    ✓ test_create_result
+    ✓ test_marks_at_boundary_allowed        (marks == total_marks is valid)
+    ✓ test_marks_cannot_exceed_total        (marks > total_marks raises ValidationError)
+    ✓ test_unique_result_per_student_exam   (duplicate (student, exam) raises IntegrityError)
+    ✓ test_zero_marks_allowed               (marks = 0 is valid)
+  StudentModelTest
+    ✓ test_create_student
+    ✓ test_student_email_unique             (duplicate email raises IntegrityError)
+    ✓ test_student_number_unique            (duplicate student_number raises IntegrityError)
+  SubjectModelTest
+    ✓ test_create_subject
+    ✓ test_subject_code_unique              (duplicate subject_code raises IntegrityError)
+
+[schedules] — 7 tests
+  ClassroomModelTest
+    ✓ test_classroom_requires_teacher       (NULL teacher FK raises IntegrityError)
+    ✓ test_create_classroom
+    ✓ test_room_number_unique               (duplicate room_number raises IntegrityError)
+  TeacherModelTest
+    ✓ test_create_teacher
+    ✓ test_teacher_email_unique             (duplicate email raises IntegrityError)
+  TimetableModelTest
+    ✓ test_create_timetable_slot
+    ✓ test_timetable_day_choices            (Saturday is not a valid weekday choice)
+
+[operations] — 9 tests
+  AttendanceModelTest
+    ✓ test_all_status_choices_accepted      (PRESENT, ABSENT, LATE, EXCUSED all valid)
+    ✓ test_create_attendance_present
+    ✓ test_default_status_is_present
+  ClassroomStudentModelTest
+    ✓ test_create_classroom_student
+    ✓ test_student_can_be_in_multiple_classrooms
+  IssuesModelTest
+    ✓ test_create_issue
+    ✓ test_issue_default_unresolved         (is_resolved defaults to False)
+    ✓ test_issue_without_reporter           (reported_by is nullable)
+    ✓ test_resolve_issue                    (can toggle is_resolved to True)
+
+Summary
+-------
+  Total  : 28
+  Passed : 28  ✓
+  Failed :  0
+  Errors :  0
+  Skipped:  0
