@@ -11,6 +11,7 @@ services:
       python manage.py migrate --noinput &&
       python _seed_data.py &&
       python _demo_accounts.py &&
+      python _bootstrap_admin.py &&
       python manage.py collectstatic --noinput &&
       gunicorn school_management.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4
     envVars:
@@ -22,3 +23,9 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 1
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@sms-fake.local
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: Admin@SMS-2026!
